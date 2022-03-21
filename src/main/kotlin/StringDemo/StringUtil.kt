@@ -27,4 +27,16 @@ class StringUtil {
             data = data.substring(4 + length)
         }
     }
+
+    /**
+     * 演示格式化字符串效果
+     * 汉字计算length时与英文字符一样,但是实际占用宽度,大致相当于两个英文字符
+     */
+    fun formatString() {
+        val source = "汉字"
+        val len = "1234567890"
+        println(String.format("%10s", source))
+        println(String.format("%-10s", source))
+        println(len)
+    }
 }
