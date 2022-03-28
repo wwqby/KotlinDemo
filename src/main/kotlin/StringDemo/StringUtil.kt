@@ -39,4 +39,12 @@ class StringUtil {
         println(String.format("%-10s", source))
         println(len)
     }
+
+    fun formatStringWithLength() {
+        val len = "1234567890"
+        println(len)
+        println(String.format("%8s", len))
+        println(String.format("%15s", len))
+        println(String.format("%-15s", len))
+    }
 }
