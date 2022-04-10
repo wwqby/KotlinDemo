@@ -1,5 +1,6 @@
 package designermode
 
+import designermode.actormode.*
 import designermode.creator.*
 
 
@@ -8,7 +9,32 @@ import designermode.creator.*
  */
 fun main(args: Array<String>) {
 
-    testBuildMode()
+    testDelegateObservable()
+}
+
+/**
+ * 测试属性委托实现观察者模式
+ */
+fun testDelegateObservable() {
+    //测试观察者模式
+    println("测试观察者模式")
+    val stock = StockUpdate()
+    val stockDisplay = StockDisplay()
+    stock.observers.add(stockDisplay)
+    stock.setStockPriceChanged(101)
+
+    //通过属性委托实现观察者模式
+    val stockDisplayListener = StockDisplayListener()
+    val stockUpdate2 = StockUpdate2()
+    stockUpdate2.listener.add(stockDisplayListener)
+    stockUpdate2.price = 100
+    stockUpdate2.price = 200
+
+    //通过属性委托实现对属性的控制
+    value = 100
+    println(value)
+    value = -100
+    println(value)
 }
 
 /**
