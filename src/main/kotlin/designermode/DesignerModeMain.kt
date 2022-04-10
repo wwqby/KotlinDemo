@@ -8,7 +8,37 @@ import designermode.creator.*
  */
 fun main(args: Array<String>) {
 
-    testAbstractFactory()
+    testBuildMode()
+}
+
+/**
+ * 测试建造者模式
+ */
+fun testBuildMode() {
+    //测试建造者模式
+    println("测试建造者模式")
+    val robot = Robot.RobotBuilder("SkyWalker").apply {
+        battery = "100"
+        height = 80
+        weight = 40
+    }.build()
+    println(robot.toString())
+
+    //测试可选参数初始化
+    val robot2 = Robot2(
+        code = "BlackWarrior",
+        battery = "100",
+        height = 80,
+        weight = 40
+    )
+    println(robot2.toString())
+
+    //测试对参数初始化约束
+    val robot3 = Robot2(
+        code = "BlackWarrior",
+        battery = "100",
+    )
+    println(robot2.toString())
 }
 
 /**
