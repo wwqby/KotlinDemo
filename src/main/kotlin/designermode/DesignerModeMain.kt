@@ -8,7 +8,22 @@ import designermode.creator.*
  */
 fun main(args: Array<String>) {
 
-    testFactory()
+    testAbstractFactory()
+}
+
+/**
+ * 抽象工厂测试函数
+ */
+fun testAbstractFactory() {
+    //测试抽象工厂类
+    println("测试抽象工厂类")
+    val dellFactory = AbstractFactory(DellFactory())
+    val dell = dellFactory.produce()
+    println(dell)
+    //运用内联函数优化后
+    val asusFactory = AbstractFactory.invoke2<Asus>()
+    val asus = asusFactory.produce()
+    println(asus)
 }
 
 /**
