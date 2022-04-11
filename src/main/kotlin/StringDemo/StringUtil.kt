@@ -1,11 +1,27 @@
 package StringDemo
 
 /**
+ * 测试函数入口
+ */
+fun main(args: Array<String>) {
+    StringUtil().testStringTrim()
+}
+
+/**
  * 字符串处理类
  * 功能1:演示String.format功能{@see getDoubleWithPlus()}
  * 功能2:演示了分解处理TLV功能{@see getTLV()}
  */
 class StringUtil {
+
+
+    /**
+     * 测试String的trim()方法
+     * trim()方法会去掉开头和结尾连续的空格,文字间隔的空格不处理
+     */
+    fun testStringTrim() {
+        println("    SUCCESS AND FAIL.    ".trim())
+    }
 
     /**
      * 演示format用法
@@ -48,3 +64,4 @@ class StringUtil {
         println(String.format("%-15s", len))
     }
 }
+
