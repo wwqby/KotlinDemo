@@ -2,15 +2,16 @@
 
 package flows
 
+import designermode.actormode.value
 import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.*
 import kotlin.time.ExperimentalTime
 import kotlin.time.measureTime
 
 fun main(args: Array<String>) = runBlocking {
 
-
-
+    FlowStudy.testFlowSharedFlow()
 }
 
 /**
@@ -20,7 +21,7 @@ fun main(args: Array<String>) = runBlocking {
  * 3.flow背压
  * 4.flow的操作符
  */
-class FlowStudy {
+object FlowStudy {
 
     /**
      * 验证onStart,onCompletion的执行机制
@@ -451,6 +452,165 @@ class FlowStudy {
         }.collect {
             println(it)
         }
+    }
+
+    /**
+     * 测试使用stateflow，验证stateflow特性
+     * 1.stateflow是接口，可以自己通过mutableStateFlow或者通过flow().stateIn()来获得
+     * 2.flow().stateIn()来获取，需要配置stateFlow的参数
+     * 3.scope，代表生命周期作用域，当该协程结束，stateFlow结束
+     * 4.started，热流开始策略。WhileSubscribed：开始于第一个订阅者，结束于最后一个订阅者取消。Eagerly：立即开始并永不停止。Lazily：当第一个订阅者出现时开始并永不停止
+     * 5.initialValue，初始值。stateFlow必须有一个默认值
+     */
+    suspend fun testFlowStateFlow(){
+
+        val core=CoroutineScope(Dispatchers.Default)
+        val state= flow {
+            repeat(10){
+                delay(500)
+                emit(it*100)
+            }
+        }.stateIn(
+            core,
+            SharingStarted.WhileSubscribed(),
+            -1
+        )
+        val job1=core.launch {
+            state.collect {
+                println("job:value=$it")
+            }
+        }
+        delay(2000)
+        val job2=core.launch {
+            state.collect {
+                println("job2:value=$it")
+            }
+        }
+        repeat(10){
+            delay(1000)
+            if (it==5)job1.cancel()
+        }
+        core.cancel()
+    }
+
+    /**
+     * 测试MutableStateFlow
+     * 可以在外部改动，StateIn得到的StateFlow只能在Flow内部改变
+     * MutableStateFlow没有额外配置的参数
+     * 参考特性，类似于scope=
+     */
+    suspend fun testFlowMutableStateFlow(){
+        val core=CoroutineScope(Dispatchers.Default)
+        val state0= MutableStateFlow(100)
+        val state=state0
+        //job1从默认值100开始
+        val job1=core.launch {
+            state.collect {
+                println("job:value=$it")
+            }
+        }
+        //对比下方没有延时，发现stateFlow默认背压，只显示最新值
+        repeat(5){
+            delay(100)
+            state.value=it*100
+        }
+        //只显示400，抛弃了前面的旧值
+        repeat(5){
+            state.value=it*100
+        }
+        //job2从400开始
+        val job2=core.launch {
+            state.collect {
+                println("job2:value=$it")
+            }
+        }
+        //stateFlow下游是可以取消的，取消job或者协程
+        repeat(10){
+            delay(500)
+            state.value=it*100
+            if (it==5)job1.cancel()
+        }
+        core.cancel()
+    }
+
+    /**
+     * MutableSharedFlow
+     * 与MutableStateFlow类似
+     * 1.可以在外部emit发送新值
+     * 2.初始化时，没有默认值
+     * 3.可以在初始化时配置更多得参数
+     *  replay，缓存数量
+     *  onBufferOverflow，缓存策略 SUSPEND：挂起。DROP_OLDEST：放弃最旧得数据。DROP_LATEST：放弃最新得数据
+     */
+    suspend fun testFlowMutableSharedFlow(){
+        val core=CoroutineScope(Dispatchers.Default)
+        val state0= MutableSharedFlow<Int>(1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
+        val state=state0
+        //job1从默认值100开始
+        val job1=core.launch {
+            state.collect {
+                println("job:value=$it")
+            }
+        }
+        //对比下方没有延时，发现stateFlow默认背压，只显示最新值
+        repeat(5){
+            delay(100)
+            state.emit(100)
+        }
+        //只显示400，抛弃了前面的旧值
+        repeat(5){
+            state.emit(it*100)
+        }
+        //job2从400开始
+        val job2=core.launch {
+            state.collect {
+                println("job2:value=$it")
+            }
+        }
+        //stateFlow下游是可以取消的，取消job或者协程
+        repeat(10){
+            delay(500)
+            state.emit(it*100)
+            if (it==5)job1.cancel()
+        }
+        core.cancel()
+    }
+
+    /**
+     * 测试SharedFlow
+     * SharedIn配置参数
+     * 1.scope，生命周期上下文
+     * 2.开始策略，参考StateIn
+     * 3.replay 缓存池大小
+     */
+    suspend fun testFlowSharedFlow(){
+        val core=CoroutineScope(Dispatchers.Default)
+        val state= flow {
+            repeat(10){
+                delay(500)
+                emit(it*100)
+            }
+        }.shareIn(
+            core,
+            SharingStarted.WhileSubscribed(),
+            //缓存数量，会把旧值一起发送
+            5
+        )
+        //job1从默认值100开始
+        val job1=core.launch {
+            state.collect {
+                println("job:value=$it")
+            }
+        }
+        delay(2000)
+        //job2从400开始
+        val job2=core.launch {
+            state.collect {
+                println("job2:value=$it")
+            }
+        }
+        delay(3000)
+        core.cancel()
     }
 
 }
