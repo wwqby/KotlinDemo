@@ -4,7 +4,7 @@ package StringDemo
  * 测试函数入口
  */
 fun main(args: Array<String>) {
-    StringUtil().testStringTrim()
+    StringUtil().testStringNull()
 }
 
 /**
@@ -13,6 +13,16 @@ fun main(args: Array<String>) {
  * 功能2:演示了分解处理TLV功能{@see getTLV()}
  */
 class StringUtil {
+
+
+    /**
+     * 测试了如果是空对象,会打印null字符串
+     */
+    fun testStringNull() {
+        val data: String? = null
+        val data2: Int? = data?.length
+        println("data2=$data2")
+    }
 
 
     /**

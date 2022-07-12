@@ -15,6 +15,7 @@ repositories {
 dependencies {
     testImplementation(kotlin("test"))
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.3")
+    implementation("org.bouncycastle:bctls-jdk15to18:1.71")
 }
 
 tasks.test {
